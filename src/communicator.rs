@@ -1,10 +1,10 @@
 pub mod pushover;
+use crate::config::Config;
 
 pub struct Message {
     pub title : String,
     pub contents : String,
 }
-
 
 pub trait Communicator {
 
@@ -13,3 +13,12 @@ pub trait Communicator {
 }
 
 
+pub fn resolve(config : Config) -> Option<Box<dyn Communicator>> {
+
+    if let Some(po_config) = config.pushover {
+        return Some(Box::new(po_config));
+    }
+
+
+    None
+}

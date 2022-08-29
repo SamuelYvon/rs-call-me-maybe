@@ -1,3 +1,4 @@
+use serde::{Deserialize};
 use super::{Communicator, Message};
 use std::collections::HashMap;
 
@@ -6,21 +7,14 @@ const APP_TOKEN_PARAM: &str = "token";
 const USER_TOKEN_PARAM: &str = "user";
 const MESSAGE_PARAM: &str = "message";
 
-pub struct PushOverClient {
-    app_token: String,
-    user_token: String,
+#[derive(Deserialize)]
+#[derive(Debug)]
+pub struct PushOverConfiguration {
+    pub app_token : String,
+    pub user_token : String
 }
 
-impl PushOverClient {
-    pub fn new() -> PushOverClient {
-        PushOverClient {
-            user_token: "".to_string(),
-            app_token: "".to_string(),
-        }
-    }
-}
-
-impl Communicator for PushOverClient {
+impl Communicator for PushOverConfiguration {
     fn send(&self, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
         let mut json_data: HashMap<&str, &str> = HashMap::new();
 

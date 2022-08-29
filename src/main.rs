@@ -2,12 +2,16 @@ use std::io;
 use Result::Err;
 
 mod communicator;
-use communicator::{Message, Communicator};
-use communicator::pushover::PushOverClient;
+mod config;
+
+use communicator::pushover::PushOverConfiguration;
+use communicator::{resolve, Communicator, Message};
+use config::Config;
+use simple_error::bail;
 
 fn read_stdin() -> Vec<String> {
     let stdin = io::stdin();
-    let mut lines : Vec<String> = Vec::new();
+    let mut lines: Vec<String> = Vec::new();
 
     loop {
         let mut line = String::new();
@@ -18,24 +22,35 @@ fn read_stdin() -> Vec<String> {
                     break;
                 }
                 lines.push(line);
-            },
-            Err(e) => panic!("{e}")
+            }
+            Err(e) => panic!("{e}"),
         }
     }
 
     return lines;
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn read_and_send(client: Box<dyn Communicator>) -> Result<(), Box<dyn std::error::Error>> {
     let contents = read_stdin().join("\n");
 
     let message = Message {
         title: "hello".to_string(),
-        contents : contents
+        contents: contents,
     };
 
-    let client = PushOverClient::new();
     client.send(&message)?;
 
     Ok(())
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = Config::resolve().expect("RR");
+    let communicator = resolve(config);
+
+    match communicator {
+        None => {
+            bail!("No communicator found")
+        }
+        Some(client) => read_and_send(client),
+    }
 }
