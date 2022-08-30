@@ -23,7 +23,7 @@ impl Communicator for PushOverConfiguration {
         json_data.insert(MESSAGE_PARAM, &message.contents);
 
         let client = reqwest::blocking::Client::new();
-        let _ = client.post(PUSH_OVER_URL).json(&json_data).send();
+        client.post(PUSH_OVER_URL).json(&json_data).send()?;
 
         Ok(())
     }

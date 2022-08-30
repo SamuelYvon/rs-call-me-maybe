@@ -13,12 +13,13 @@ pub trait Communicator {
 }
 
 
-pub fn resolve(config : Config) -> Option<Box<dyn Communicator>> {
+pub fn resolve(config : Config) -> Vec<Box<dyn Communicator>> {
+    let mut vector : Vec<Box<dyn Communicator>> = Vec::new();
 
     if let Some(po_config) = config.pushover {
-        return Some(Box::new(po_config));
+        vector.push(Box::new(po_config));
     }
 
 
-    None
+    return vector;
 }

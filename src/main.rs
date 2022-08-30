@@ -4,8 +4,8 @@ use Result::Err;
 mod communicator;
 mod config;
 
+use communicator::{resolve, Message};
 use config::Config;
-use communicator::{resolve, Communicator, Message};
 use simple_error::bail;
 
 fn read_stdin() -> Vec<String> {
@@ -29,27 +29,35 @@ fn read_stdin() -> Vec<String> {
     return lines;
 }
 
-fn read_and_send(client: Box<dyn Communicator>) -> Result<(), Box<dyn std::error::Error>> {
-    let contents = read_stdin().join("\n");
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = Config::resolve()?;
+    let communicators = resolve(config);
 
+    if 0 == communicators.len() {
+        bail!("No communicator found");
+    }
+
+    let mut errors: Vec<Box<dyn std::error::Error>> = Vec::new();
+
+    // TODO: maybe other ways of getting STDIN
+    let contents = read_stdin().join("\n");
     let message = Message {
         title: "hello".to_string(),
         contents: contents,
     };
 
-    client.send(&message)?;
-
-    Ok(())
-}
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Config::resolve()?;
-    let communicator = resolve(config);
-
-    match communicator {
-        None => {
-            bail!("No communicator found")
-        }
-        Some(client) => read_and_send(client),
+    for communicator in communicators.iter() {
+        match communicator.send(&message) {
+            Ok(()) => break,
+            Err(e) => errors.push(e),
+        };
     }
+
+    return if errors.len() < communicators.len() {
+        Ok(())
+    } else {
+        let error_list: Vec<String> = errors.iter().map(|e| e.to_string()).collect();
+        let error_list_formatted = error_list.join("\n-");
+        Err(format!("Could not invoke any communicator. Here is the list of errors:\n-{error_list_formatted}"))?
+    };
 }
