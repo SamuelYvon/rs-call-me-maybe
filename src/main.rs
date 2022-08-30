@@ -4,9 +4,8 @@ use Result::Err;
 mod communicator;
 mod config;
 
-use communicator::pushover::PushOverConfiguration;
-use communicator::{resolve, Communicator, Message};
 use config::Config;
+use communicator::{resolve, Communicator, Message};
 use simple_error::bail;
 
 fn read_stdin() -> Vec<String> {
@@ -44,7 +43,7 @@ fn read_and_send(client: Box<dyn Communicator>) -> Result<(), Box<dyn std::error
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Config::resolve().expect("RR");
+    let config = Config::resolve()?;
     let communicator = resolve(config);
 
     match communicator {
