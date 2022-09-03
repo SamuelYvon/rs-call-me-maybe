@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let contents = read_stdin().join("\n");
     let message = Message {
         title: "hello".to_string(),
-        contents: contents,
+        contents,
     };
 
     for communicator in communicators.iter() {

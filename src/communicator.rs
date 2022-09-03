@@ -25,15 +25,11 @@ fn communicator_cmp(a: &Box<dyn Communicator>, b: &Box<dyn Communicator>) -> Ord
     let a_prio = a.priority();
     let b_prio = b.priority();
 
-    match a_prio {
-        CommunicatorPriority::Default => match b_prio {
-            Default => Ordering::Equal,
-            _ => Ordering::Less,
-        },
-        CommunicatorPriority::Priority(a_prio_n) => match b_prio {
-            CommunicatorPriority::Default => Ordering::Greater,
-            CommunicatorPriority::Priority(b_prio_n) => a_prio_n.cmp(&b_prio_n),
-        },
+    match (a_prio, b_prio) {
+        (CommunicatorPriority::Default, CommunicatorPriority::Default) => Ordering::Equal,
+        (CommunicatorPriority::Default, CommunicatorPriority::Priority(_)) => Ordering::Less,
+        (CommunicatorPriority::Priority(_), CommunicatorPriority::Default) => Ordering::Greater,
+        (CommunicatorPriority::Priority(a), CommunicatorPriority::Priority(b)) => a.cmp(&b)
     }
 }
 
