@@ -1,5 +1,5 @@
 use serde::{Deserialize};
-use super::{Communicator, Message};
+use super::{Communicator, CommunicatorPriority, Message};
 use std::collections::HashMap;
 
 const PUSH_OVER_URL: &str = "https://api.pushover.net/1/messages.json";
@@ -11,7 +11,8 @@ const MESSAGE_PARAM: &str = "message";
 #[derive(Debug)]
 pub struct PushOverConfiguration {
     pub app_token : String,
-    pub user_token : String
+    pub user_token : String,
+    pub priority : Option<i32>,
 }
 
 impl Communicator for PushOverConfiguration {
@@ -26,5 +27,12 @@ impl Communicator for PushOverConfiguration {
         client.post(PUSH_OVER_URL).json(&json_data).send()?;
 
         Ok(())
+    }
+
+    fn priority(&self) -> CommunicatorPriority {
+        match self.priority {
+            Some(p) => CommunicatorPriority::Priority(p),
+            None => CommunicatorPriority::Default
+        }
     }
 }
