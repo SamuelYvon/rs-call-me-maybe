@@ -1,14 +1,17 @@
 [package]
 name = "rs-call-me-maybe"
-version = "0.1.0"
+version = "0.0.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Samuel Yvon"]
+description = "CallMeMaybe is a small CLI tool to notify you of the completion of a command"
+readme = "README.md"
+homepage = "https://github.com/SamuelYvon/rs-call-me-maybe"
 
 [dependencies]
-clap = { version = "3.2.17", features = ["derive"] }
+clap = { version = "3.2.17", features = ["derive", "cargo"] }
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 serde ={version =  "1.0.144", features = ["derive"] }
+notify-rust = "^3"
 simple-error = "0.2.3"
 home = "0.5.3"
 toml = "0.5.9"

@@ -4,9 +4,27 @@ use Result::Err;
 mod communicator;
 mod config;
 
-use communicator::{resolve, Message};
+use clap::Parser;
+use communicator::{resolve, Communicator, Message};
 use config::Config;
 use simple_error::bail;
+use std::path::PathBuf;
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about)]
+struct Args {
+    /// Only parse the config, but do not execute
+    #[clap(short, long)]
+    parse_config: Option<bool>,
+
+    /// alternative configuration path. By default, uses the ~/.callmemaybe file
+    #[clap(long)]
+    config_path: Option<PathBuf>,
+
+    /// specify a communicator to use by name
+    #[clap(short, long)]
+    communicator: Option<String>,
+}
 
 fn read_stdin() -> Vec<String> {
     let stdin = io::stdin();
@@ -26,25 +44,38 @@ fn read_stdin() -> Vec<String> {
         }
     }
 
-    return lines;
+    lines
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Config::resolve()?;
-    let communicators = resolve(config);
-
-    if 0 == communicators.len() {
-        bail!("No communicator found");
-    }
-
-    let mut errors: Vec<Box<dyn std::error::Error>> = Vec::new();
-
+fn input() -> Message {
     // TODO: maybe other ways of getting STDIN
     let contents = read_stdin().join("\n");
-    let message = Message {
+    Message {
         title: "hello".to_string(),
         contents,
-    };
+    }
+}
+
+fn use_exact(
+    name: &str,
+    communicators: Vec<Box<dyn Communicator>>,
+) -> Result<(), Box<dyn std::error::Error>> {
+
+    let of_name = communicators.iter().find(|e| e.name() == name);
+    let communicator = of_name.ok_or(format!("No communicator with the provided name ({name})"))?;
+    let message = input();
+
+    communicator.send(&message)?;
+
+    Ok(())
+}
+
+fn use_first_working(
+    communicators: Vec<Box<dyn Communicator>>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut errors: Vec<Box<dyn std::error::Error>> = Vec::new();
+
+    let message = input();
 
     for communicator in communicators.iter() {
         match communicator.send(&message) {
@@ -60,4 +91,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let error_list_formatted = error_list.join("\n-");
         Err(format!("Could not invoke any communicator. Here is the list of errors:\n-{error_list_formatted}"))?
     };
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = Args::parse();
+
+    let config = Config::resolve(args.config_path)?;
+
+    if args.parse_config.unwrap_or(false) {
+        return Ok(());
+    }
+
+    let communicators = resolve(config);
+
+    if communicators.is_empty() {
+        bail!("No communicator found, cannot proceed.");
+    }
+
+    if let Some(communicator_name) = args.communicator {
+        use_exact(&communicator_name, communicators)
+    } else {
+        use_first_working(communicators)
+    }
 }

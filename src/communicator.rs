@@ -1,4 +1,5 @@
 pub mod pushover;
+pub mod libnotify;
 
 use crate::config::Config;
 use std::cmp::Ordering;
@@ -15,21 +16,26 @@ pub struct Message {
 
 pub trait Communicator {
     fn priority(&self) -> CommunicatorPriority {
-        return CommunicatorPriority::Default;
+        CommunicatorPriority::Default
     }
 
     fn send(&self, message: &Message) -> Result<(), Box<dyn std::error::Error>>;
+
+    fn name(&self) -> &'static str;
 }
 
+/// Compare two communicators based on priority. Higher priority value will have
+/// precedence over lower priority number values. The default value is the lowest
+/// possible value.
 fn communicator_cmp(a: &Box<dyn Communicator>, b: &Box<dyn Communicator>) -> Ordering {
     let a_prio = a.priority();
     let b_prio = b.priority();
 
     match (a_prio, b_prio) {
         (CommunicatorPriority::Default, CommunicatorPriority::Default) => Ordering::Equal,
-        (CommunicatorPriority::Default, CommunicatorPriority::Priority(_)) => Ordering::Less,
-        (CommunicatorPriority::Priority(_), CommunicatorPriority::Default) => Ordering::Greater,
-        (CommunicatorPriority::Priority(a), CommunicatorPriority::Priority(b)) => a.cmp(&b)
+        (CommunicatorPriority::Default, CommunicatorPriority::Priority(_)) => Ordering::Greater,
+        (CommunicatorPriority::Priority(_), CommunicatorPriority::Default) => Ordering::Less,
+        (CommunicatorPriority::Priority(a), CommunicatorPriority::Priority(b)) => b.cmp(&a)
     }
 }
 
@@ -40,7 +46,11 @@ pub fn resolve(config: Config) -> Vec<Box<dyn Communicator>> {
         vector.push(Box::new(po_config));
     }
 
+    if let Some(lib_ntfy) = config.libnotify {
+        vector.push(Box::new(lib_ntfy));
+    }
+
     vector.sort_by(communicator_cmp);
 
-    return vector;
+    vector
 }
