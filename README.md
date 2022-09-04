@@ -19,7 +19,14 @@ call-me-maybe -h
 
 ## Installation
 
+### From crates.io
+
 `cargo install call-me-maybe`
+
+
+### From source
+
+From within the source's directory: `cargo install --path .`
 
 ## Supported methods of notification
 
