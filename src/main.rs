@@ -21,6 +21,10 @@ struct Args {
     #[clap(long)]
     config: Option<PathBuf>,
 
+    /// The title to use for the message
+    #[clap(short, long)]
+    title : Option<String>,
+
     /// specify a communicator to use by name
     #[clap(short, long)]
     communicator: Option<String>,
@@ -111,7 +115,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let input = || {
-        stdin_input(config.generate_title())
+        stdin_input(args.title.unwrap_or_else(|| config.generate_title()))
     };
 
     if let Some(communicator_name) = args.communicator {
