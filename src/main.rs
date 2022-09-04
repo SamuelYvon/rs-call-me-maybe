@@ -105,6 +105,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::resolve(args.config)?;
 
     if args.parse_config.unwrap_or(false) {
+        println!("Config is OK");
         return Ok(());
     }
 
