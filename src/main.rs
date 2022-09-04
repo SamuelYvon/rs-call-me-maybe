@@ -17,9 +17,9 @@ struct Args {
     #[clap(short, long)]
     parse_config: Option<bool>,
 
-    /// alternative configuration path. By default, uses the ~/.callmemaybe file
+    /// alternative configuration path. By default, uses the ~/.callmemaybe[.toml] file
     #[clap(long)]
-    config_path: Option<PathBuf>,
+    config: Option<PathBuf>,
 
     /// specify a communicator to use by name
     #[clap(short, long)]
@@ -47,18 +47,19 @@ fn read_stdin() -> Vec<String> {
     lines
 }
 
-fn input() -> Message {
+fn stdin_input(title : String) -> Message {
     // TODO: maybe other ways of getting STDIN
     let contents = read_stdin().join("\n");
     Message {
-        title: "hello".to_string(),
+        title,
         contents,
     }
 }
 
-fn use_exact(
+fn use_exact <F: FnOnce() -> Message>(
     name: &str,
-    communicators: Vec<Box<dyn Communicator>>,
+    communicators: Vec<&dyn Communicator>,
+    input : F
 ) -> Result<(), Box<dyn std::error::Error>> {
 
     let of_name = communicators.iter().find(|e| e.name() == name);
@@ -70,8 +71,9 @@ fn use_exact(
     Ok(())
 }
 
-fn use_first_working(
-    communicators: Vec<Box<dyn Communicator>>,
+fn use_first_working<F: FnOnce() -> Message>(
+    communicators: Vec<&dyn Communicator>,
+    input : F
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut errors: Vec<Box<dyn std::error::Error>> = Vec::new();
 
@@ -96,21 +98,25 @@ fn use_first_working(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
-    let config = Config::resolve(args.config_path)?;
+    let config = Config::resolve(args.config)?;
 
     if args.parse_config.unwrap_or(false) {
         return Ok(());
     }
 
-    let communicators = resolve(config);
+    let communicators = resolve(&config);
 
     if communicators.is_empty() {
         bail!("No communicator found, cannot proceed.");
     }
 
+    let input = || {
+        stdin_input(config.generate_title())
+    };
+
     if let Some(communicator_name) = args.communicator {
-        use_exact(&communicator_name, communicators)
+        use_exact(&communicator_name, communicators, input)
     } else {
-        use_first_working(communicators)
+        use_first_working(communicators, input)
     }
 }

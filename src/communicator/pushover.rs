@@ -6,6 +6,7 @@ const PUSH_OVER_URL: &str = "https://api.pushover.net/1/messages.json";
 const APP_TOKEN_PARAM: &str = "token";
 const USER_TOKEN_PARAM: &str = "user";
 const MESSAGE_PARAM: &str = "message";
+const TITLE_PARAM : &str = "title";
 const NAME: &str = "pushover";
 
 #[derive(Deserialize, Debug)]
@@ -22,6 +23,7 @@ impl Communicator for PushOverConfiguration {
         json_data.insert(APP_TOKEN_PARAM, &self.app_token);
         json_data.insert(USER_TOKEN_PARAM, &self.user_token);
         json_data.insert(MESSAGE_PARAM, &message.contents);
+        json_data.insert(TITLE_PARAM, &message.title);
 
         let client = reqwest::blocking::Client::new();
         client.post(PUSH_OVER_URL).json(&json_data).send()?;

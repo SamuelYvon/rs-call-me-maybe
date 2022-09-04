@@ -27,7 +27,7 @@ pub trait Communicator {
 /// Compare two communicators based on priority. Higher priority value will have
 /// precedence over lower priority number values. The default value is the lowest
 /// possible value.
-fn communicator_cmp(a: &Box<dyn Communicator>, b: &Box<dyn Communicator>) -> Ordering {
+fn communicator_cmp(a: &&dyn Communicator, b: &&dyn Communicator) -> Ordering {
     let a_prio = a.priority();
     let b_prio = b.priority();
 
@@ -39,15 +39,15 @@ fn communicator_cmp(a: &Box<dyn Communicator>, b: &Box<dyn Communicator>) -> Ord
     }
 }
 
-pub fn resolve(config: Config) -> Vec<Box<dyn Communicator>> {
-    let mut vector: Vec<Box<dyn Communicator>> = Vec::new();
+pub fn resolve(config: &Config) -> Vec<&dyn Communicator> {
+    let mut vector: Vec<&dyn Communicator> = Vec::new();
 
-    if let Some(po_config) = config.pushover {
-        vector.push(Box::new(po_config));
+    if let Some(po_config) = &config.pushover {
+        vector.push(po_config);
     }
 
-    if let Some(lib_ntfy) = config.libnotify {
-        vector.push(Box::new(lib_ntfy));
+    if let Some(lib_ntfy) = &config.libnotify {
+        vector.push(lib_ntfy);
     }
 
     vector.sort_by(communicator_cmp);

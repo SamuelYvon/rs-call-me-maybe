@@ -1,5 +1,5 @@
-use crate::communicator::pushover::PushOverConfiguration;
 use crate::communicator::libnotify::LibNotifyConfiguration;
+use crate::communicator::pushover::PushOverConfiguration;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::{BufReader, Read};
@@ -7,12 +7,15 @@ use std::path::PathBuf;
 
 const CONFIG_FILE_NAME: &str = ".callmemaybe";
 const ERR_NO_HOME_PATH: &str = "Could not find the home directory, or it does not exist";
-const ERR_NO_CONFIG_DFLT_PATH : &str = "Could not find ~/.callmemaybe nor ~/.callmemaybe.toml";
+const ERR_NO_CONFIG_DFLT_PATH: &str = "Could not find ~/.callmemaybe nor ~/.callmemaybe.toml";
+const DEFAULT_HOSTNAME: &str = "{UNK HOST}";
+const DEFAULT_TITLE_FORMAT: &str = "$host %a-%b-%Y";
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    pub title_fmt: Option<String>,
     pub pushover: Option<PushOverConfiguration>,
-    pub libnotify : Option<LibNotifyConfiguration>
+    pub libnotify: Option<LibNotifyConfiguration>,
 }
 
 fn resolve_file(home_dir: PathBuf) -> Option<PathBuf> {
@@ -36,6 +39,31 @@ fn resolve_file(home_dir: PathBuf) -> Option<PathBuf> {
 }
 
 impl Config {
+    /// Generate the title according to the pattern specified in the config.
+    /// If no pattern is configured, a default pattern (the current date) is
+    /// returned.
+    ///
+    /// The following placeholders are supported:
+    /// All the strftime formats from chrono
+    /// $host for the hostname
+    pub fn generate_title(&self) -> String {
+        let now = chrono::offset::Local::now();
+        let fmt = self
+            .title_fmt
+            .as_ref()
+            .map_or(DEFAULT_TITLE_FORMAT, |fmt| &fmt[..]);
+
+        let maybe_hostname = hostname::get();
+        let hostname = maybe_hostname
+            .as_ref()
+            .map(|host_os_str| { host_os_str.to_str() }.unwrap_or(DEFAULT_HOSTNAME))
+            .unwrap_or(DEFAULT_HOSTNAME);
+
+        let wo_host = now.format(fmt).to_string();
+
+        wo_host.replace("$host", hostname)
+    }
+
     pub fn resolve(
         alternative_path: Option<PathBuf>,
     ) -> Result<Config, Box<dyn std::error::Error>> {
