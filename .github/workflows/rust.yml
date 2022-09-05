@@ -24,7 +24,10 @@ jobs:
       run: cargo test --verbose
   lint-check:
       runs-on: ubuntu-latest
+
       steps:
+        - name: Install Pre-Reqs
+          run: sudo apt install libdbus-1-dev pkg-config -y
         - uses: actions/checkout@v1
         - run: rustup component add clippy
         - uses: actions-rs/clippy-check@v1
