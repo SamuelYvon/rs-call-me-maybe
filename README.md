@@ -1,6 +1,6 @@
 # call-me-maybe
 
-> CallMeMaybe is a small CLI tool to notify you of the completion of a command
+> call-me-maybe is a small CLI tool to notify you of the completion of a command
 
 By default, the tools consumes stdin for a message's content and a title is generated for each message. The title can be 
 specified via command line argument or generated automatically through a template given in configuration.
@@ -44,8 +44,7 @@ placeholder as well as `$host` for the computer's hostname. If left unspecified,
 
 ### Communicator basic configuration
 
-Every communicator supports a priority number (key `priority`). The higher value, the higher priority 
-the communicator is used. The command will try all communicators until one succeeds.
+Every communicator supports a priority number (key `priority`). The communicators are tried in order of largest priority to smallest. The command will try all communicators until one succeeds.
 
 ### Pushover
 
