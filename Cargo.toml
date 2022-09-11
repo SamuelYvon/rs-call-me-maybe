@@ -13,7 +13,10 @@ clap = { version = "3.2.17", features = ["derive", "cargo"] }
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 serde ={version =  "1.0.144", features = ["derive"] }
 hostname = "0.3.1"
-notify-rust = "^3"
+notify-rust = { version = "^3", optional = true }
 simple-error = "0.2.3"
 home = "0.5.3"
 toml = "0.5.9"
+
+[features]
+libinotify = [ "dep:notify-rust" ]

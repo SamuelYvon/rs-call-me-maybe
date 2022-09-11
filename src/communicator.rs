@@ -1,4 +1,5 @@
 pub mod pushover;
+#[cfg(feature = "libinotify")]
 pub mod libnotify;
 
 use crate::config::Config;
@@ -46,8 +47,10 @@ pub fn resolve(config: &Config) -> Vec<&dyn Communicator> {
         vector.push(po_config);
     }
 
-    if let Some(lib_ntfy) = &config.libnotify {
-        vector.push(lib_ntfy);
+    #[cfg(feature = "libinotify")] {
+        if let Some(lib_ntfy) = &config.libnotify {
+            vector.push(lib_ntfy);
+        }
     }
 
     vector.sort_by(communicator_cmp);

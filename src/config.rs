@@ -1,3 +1,4 @@
+#[cfg(feature = "libinotify")]
 use crate::communicator::libnotify::LibNotifyConfiguration;
 use crate::communicator::pushover::PushOverConfiguration;
 use serde::Deserialize;
@@ -15,6 +16,7 @@ const DEFAULT_TITLE_FORMAT: &str = "$host %a-%b-%Y";
 pub struct Config {
     pub title_fmt: Option<String>,
     pub pushover: Option<PushOverConfiguration>,
+    #[cfg(feature = "libinotify")]
     pub libnotify: Option<LibNotifyConfiguration>,
 }
 
