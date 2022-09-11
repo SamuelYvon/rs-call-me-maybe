@@ -54,3 +54,15 @@ The following keys are required:
 
 
 
+## Example Config:
+```toml
+title_fmt = "%H:%M"
+
+[libnotify]
+priority = 1
+
+[pushover]
+priority = 1000
+app_token = "..."
+user_token = "..."
+```
