@@ -1,6 +1,6 @@
 [package]
 name = "call-me-maybe"
-version = "0.0.0"
+version = "0.0.1"
 edition = "2021"
 authors = ["Samuel Yvon"]
 description = "CallMeMaybe is a small CLI tool to notify you of the completion of a command"
