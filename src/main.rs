@@ -14,8 +14,11 @@ use std::path::PathBuf;
 #[clap(author, version, about)]
 struct Args {
     /// Only parse the config, but do not execute
-    #[clap(short, long)]
-    parse_config: Option<bool>,
+    #[clap(short, long, takes_value = false)]
+    parse_config: bool,
+
+    #[clap(short, long, takes_value=false)]
+    list_communicators : bool,
 
     /// alternative configuration path. By default, uses the ~/.callmemaybe[.toml] file
     #[clap(long)]
@@ -28,6 +31,10 @@ struct Args {
     /// specify a communicator to use by name
     #[clap(short, long)]
     communicator: Option<String>,
+
+    /// specify parameters that can be passed to the communicator
+    #[clap(index = 1)]
+    positional_arguments: Vec<String>,
 }
 
 fn read_stdin() -> Vec<String> {
@@ -63,21 +70,23 @@ fn stdin_input(title : String) -> Message {
 fn use_exact <F: FnOnce() -> Message>(
     name: &str,
     communicators: Vec<&dyn Communicator>,
-    input : F
+    input : F,
+    arguments : &[&str]
 ) -> Result<(), Box<dyn std::error::Error>> {
 
     let of_name = communicators.into_iter().find(|&e| e.name() == name);
     let communicator = of_name.ok_or(format!("No communicator with the provided name ({name})"))?;
     let message = input();
 
-    communicator.send(&message)?;
+    communicator.send(&message, arguments)?;
 
     Ok(())
 }
 
 fn use_first_working<F: FnOnce() -> Message>(
     communicators: Vec<&dyn Communicator>,
-    input : F
+    input : F,
+    arguments : &[&str]
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut errors: Vec<Box<dyn std::error::Error>> = Vec::new();
 
@@ -85,7 +94,7 @@ fn use_first_working<F: FnOnce() -> Message>(
     let communicator_sz = communicators.len();
 
     for communicator in communicators.into_iter() {
-        match communicator.send(&message) {
+        match communicator.send(&message, arguments) {
             Ok(()) => break,
             Err(e) => errors.push(e),
         };
@@ -105,12 +114,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let config = Config::resolve(args.config)?;
 
-    if args.parse_config.unwrap_or(false) {
+    if args.parse_config {
         println!("Config is OK");
         return Ok(());
     }
 
     let communicators = resolve(&config);
+
+    if args.list_communicators { 
+        println!("Communicators available: ");
+        for comm in &communicators {
+            println!("\t-{}", comm.name());
+        }
+        return Ok(());
+    }
 
     if communicators.is_empty() {
         bail!("No communicator found, cannot proceed.");
@@ -120,9 +137,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         stdin_input(args.title.unwrap_or_else(|| config.generate_title()))
     };
 
+    let arg_reg_vec : Vec<&str> = args.positional_arguments.iter().map(AsRef::as_ref).collect();
+    let arguments = arg_reg_vec.as_slice();
+
     if let Some(communicator_name) = args.communicator {
-        use_exact(&communicator_name, communicators, input)
+        use_exact(&communicator_name, communicators, input, arguments)
     } else {
-        use_first_working(communicators, input)
+        use_first_working(communicators, input, arguments)
     }
 }

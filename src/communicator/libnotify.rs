@@ -10,7 +10,7 @@ pub struct LibNotifyConfiguration {
 }
 
 impl Communicator for LibNotifyConfiguration {
-    fn send(&self, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
+    fn send(&self, message: &Message, _ : &[&str]) -> Result<(), Box<dyn std::error::Error>> {
         Notification::new()
             .summary(&message.title)
             .body(&message.contents)
