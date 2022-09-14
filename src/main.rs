@@ -66,7 +66,7 @@ fn use_exact <F: FnOnce() -> Message>(
     input : F
 ) -> Result<(), Box<dyn std::error::Error>> {
 
-    let of_name = communicators.iter().find(|e| e.name() == name);
+    let of_name = communicators.into_iter().find(|&e| e.name() == name);
     let communicator = of_name.ok_or(format!("No communicator with the provided name ({name})"))?;
     let message = input();
 
@@ -82,15 +82,16 @@ fn use_first_working<F: FnOnce() -> Message>(
     let mut errors: Vec<Box<dyn std::error::Error>> = Vec::new();
 
     let message = input();
+    let communicator_sz = communicators.len();
 
-    for communicator in communicators.iter() {
+    for communicator in communicators.into_iter() {
         match communicator.send(&message) {
             Ok(()) => break,
             Err(e) => errors.push(e),
         };
     }
 
-    return if errors.len() < communicators.len() {
+    return if errors.len() < communicator_sz {
         Ok(())
     } else {
         let error_list: Vec<String> = errors.iter().map(|e| e.to_string()).collect();

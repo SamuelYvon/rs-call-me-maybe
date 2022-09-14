@@ -26,7 +26,7 @@ call-me-maybe -h
 
 ### From source
 
-From within the source's directory: `cargo install --path .`
+From within the source's directory: `cargo install --path . [--features the_features_you_want]`
 
 ## Supported methods of notification
 
@@ -46,12 +46,15 @@ placeholder as well as `$host` for the computer's hostname. If left unspecified,
 
 Every communicator supports a priority number (key `priority`). The communicators are tried in order of largest priority to smallest. The command will try all communicators until one succeeds.
 
+### Libnotify
+
+Requires feature `libnotify` when building to be supported.
+
 ### Pushover
 
 The following keys are required:
 - `app_token`: the application token to select an application
 - `user_token`: your user's token
-
 
 
 ## Example Config:
