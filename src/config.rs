@@ -1,6 +1,8 @@
 #[cfg(feature = "libinotify")]
 use crate::communicator::libnotify::LibNotifyConfiguration;
 use crate::communicator::pushover::PushOverConfiguration;
+use crate::communicator::httppost::HttpPostConfiguration;
+
 use serde::Deserialize;
 use std::fs::File;
 use std::io::{BufReader, Read};
@@ -18,6 +20,7 @@ pub struct Config {
     pub pushover: Option<PushOverConfiguration>,
     #[cfg(feature = "libinotify")]
     pub libnotify: Option<LibNotifyConfiguration>,
+    pub http_post: Option<HttpPostConfiguration>
 }
 
 fn resolve_file(home_dir: PathBuf) -> Option<PathBuf> {

@@ -17,6 +17,7 @@ notify-rust = { version = "^3", optional = true }
 simple-error = "0.2.3"
 home = "0.5.3"
 toml = "0.5.9"
+url = "2.3.1"
 
 [features]
 libinotify = [ "dep:notify-rust" ]

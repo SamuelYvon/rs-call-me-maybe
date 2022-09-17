@@ -56,6 +56,17 @@ The following keys are required:
 - `app_token`: the application token to select an application
 - `user_token`: your user's token
 
+### HTTP Posts
+
+The HTTP post communicator does not need any configuration and is enabled by default with the lowest priority, but you can
+use the `httppost` key to configure a priority. To use, simply provide an URL where to send a post. The object sent will be 
+a JSON object with the `title` and `message` keys.
+
+Example usage:
+```shell
+long_running_command | call-me-maybe -c httppost http://localhost:8080/endpoint
+```
+
 
 ## Example Config:
 ```toml
