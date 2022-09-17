@@ -20,7 +20,7 @@ pub trait Communicator {
         CommunicatorPriority::Default
     }
 
-    fn send(&self, message: &Message) -> Result<(), Box<dyn std::error::Error>>;
+    fn send(&self, message: &Message, arguments : &[&str]) -> Result<(), Box<dyn std::error::Error>>;
 
     fn name(&self) -> &'static str;
 }

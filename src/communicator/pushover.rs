@@ -17,7 +17,7 @@ pub struct PushOverConfiguration {
 }
 
 impl Communicator for PushOverConfiguration {
-    fn send(&self, message: &Message) -> Result<(), Box<dyn std::error::Error>> {
+    fn send(&self, message: &Message, _ : &[&str]) -> Result<(), Box<dyn std::error::Error>> {
         let mut json_data: HashMap<&str, &str> = HashMap::new();
 
         json_data.insert(APP_TOKEN_PARAM, &self.app_token);
